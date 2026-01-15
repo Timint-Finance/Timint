@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { registerOnBlockchain } from '@/lib/blockchain/polygon'
 import { generateTMITToken } from '@/lib/blockchain/token'
 import { getKYCApprovedEmail } from '@/lib/email/templates'
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Missing userId or action' }, { status: 400 })
         }
 
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         if (action === 'reject') {
             //  Reject KYC - Delete documents and update status
