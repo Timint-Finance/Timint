@@ -53,12 +53,10 @@ export async function POST(request: NextRequest) {
 
         doc.fontSize(24)
             .fillColor('#FFFFFF')
-            .font('Helvetica-Bold')
             .text('CERTIFICATE OF DIGITAL STARTUP REGISTRATION', 50, 40, { align: 'center' })
 
         doc.fontSize(10)
             .fillColor('#8DA9C4')
-            .font('Helvetica')
             .text('Pursuant to the TiMint Digital Startup Protocol (2026)', 50, 75, { align: 'center' })
 
         doc.moveDown(4)
@@ -66,7 +64,6 @@ export async function POST(request: NextRequest) {
         // Main Content
         doc.fillColor('#0B2545')
             .fontSize(12)
-            .font('Helvetica-Bold')
             .text('THIS IS TO CERTIFY THAT', { align: 'center' })
 
         doc.moveDown(0.5)
@@ -79,7 +76,6 @@ export async function POST(request: NextRequest) {
 
         doc.fontSize(11)
             .fillColor('#475569')
-            .font('Helvetica')
             .text(`has been duly recorded and registered within the TiMint Finance Digital Registry on ${new Date(startup.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}, following successful guardian verification and compliance review.`, { align: 'center' })
 
         doc.moveDown(2)
@@ -87,7 +83,6 @@ export async function POST(request: NextRequest) {
         // Founder Details Section
         doc.fontSize(14)
             .fillColor('#0B2545')
-            .font('Helvetica-Bold')
             .text('FOUNDER DETAILS')
 
         doc.moveDown(0.5)
@@ -97,10 +92,8 @@ export async function POST(request: NextRequest) {
         const addDetailRow = (label: string, value: string) => {
             doc.fontSize(10)
                 .fillColor('#64748B')
-                .font('Helvetica')
                 .text(label + ':', 50, doc.y, { continued: true, width: 150 })
             doc.fillColor('#0F172A')
-                .font('Helvetica-Bold')
                 .text(' ' + value)
             doc.moveDown(0.3)
         }
@@ -115,7 +108,6 @@ export async function POST(request: NextRequest) {
         // Guardian & KYC Section
         doc.fontSize(14)
             .fillColor('#0B2545')
-            .font('Helvetica-Bold')
             .text('GUARDIAN & KYC STATUS')
 
         doc.moveDown(0.5)
@@ -131,7 +123,6 @@ export async function POST(request: NextRequest) {
         // Ownership Declaration
         doc.fontSize(14)
             .fillColor('#0B2545')
-            .font('Helvetica-Bold')
             .text('OWNERSHIP & CONTROL DECLARATION')
 
         doc.moveDown(0.5)
@@ -140,7 +131,6 @@ export async function POST(request: NextRequest) {
 
         doc.fontSize(10)
             .fillColor('#475569')
-            .font('Helvetica')
             .text(`This registration confirms that ${user.name} is recognized as the Founder and Digital Owner of the startup name ${startup.company_name} within the TiMint ecosystem.`, { align: 'justify' })
 
         doc.moveDown(0.5)
@@ -159,7 +149,6 @@ export async function POST(request: NextRequest) {
         // Digital Ownership Record
         doc.fontSize(14)
             .fillColor('#0B2545')
-            .font('Helvetica-Bold')
             .text('DIGITAL OWNERSHIP RECORD')
 
         doc.moveDown(0.5)
@@ -168,7 +157,6 @@ export async function POST(request: NextRequest) {
 
         doc.fontSize(10)
             .fillColor('#475569')
-            .font('Helvetica')
             .text(`The startup name ${startup.company_name} has been:`)
 
         doc.moveDown(0.3)
@@ -185,7 +173,6 @@ export async function POST(request: NextRequest) {
         // Registry Details
         doc.fontSize(14)
             .fillColor('#0B2545')
-            .font('Helvetica-Bold')
             .text('REGISTRY DETAILS')
 
         doc.moveDown(0.5)
@@ -210,14 +197,12 @@ export async function POST(request: NextRequest) {
 
         doc.fontSize(10)
             .fillColor('#92400E')
-            .font('Helvetica-Bold')
             .text('LEGAL NOTICE', 60, doc.y - 70)
 
         doc.moveDown(0.3)
 
         doc.fontSize(9)
             .fillColor('#92400E')
-            .font('Helvetica')
             .text('This certificate does not constitute government incorporation, does not replace trademarks or statutory company registration. It serves as digital proof of ownership, guardianship approval, and registry record within the TiMint ecosystem.', 60, doc.y, { width: 475, align: 'justify' })
 
         // Footer
@@ -225,13 +210,11 @@ export async function POST(request: NextRequest) {
 
         doc.fontSize(10)
             .fillColor('#0B2545')
-            .font('Helvetica-Bold')
             .text('AUTHORIZED BY', { align: 'center' })
 
         doc.moveDown(0.5)
 
         doc.fontSize(10)
-            .font('Helvetica')
             .text('Registrar – Digital Startups', { align: 'center' })
             .text('TiMint Finance', { align: 'center' })
 
@@ -246,7 +229,6 @@ export async function POST(request: NextRequest) {
 
         doc.fontSize(6)
             .fillColor('#C9A227')
-            .font('Helvetica-Bold')
             .text('OFFICIAL SEAL', 475, doc.y - 45, { width: 50, align: 'center' })
             .text('TiMint Finance', 475, doc.y + 5, { width: 50, align: 'center' })
 
@@ -255,14 +237,12 @@ export async function POST(request: NextRequest) {
 
         doc.fontSize(16)
             .fillColor('#0B2545')
-            .font('Helvetica-Bold')
             .text('LEGAL DISCLAIMER', { align: 'center' })
 
         doc.moveDown(2)
 
         doc.fontSize(11)
             .fillColor('#475569')
-            .font('Helvetica')
             .text('TiMint Finance is a private digital registry and does not represent a government authority.', { align: 'center' })
 
         doc.moveDown(1)
