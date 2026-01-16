@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET(
     req: NextRequest,
@@ -8,7 +8,7 @@ export async function GET(
     try {
         const { token } = await params
         console.log('🔍 Looking up token:', token)
-        const supabase = await createClient()
+        const supabase = createAdminClient() // Use admin client to bypass RLS
 
         // Find the token (only join with users, not startups)
         const { data: tokenData, error: tokenError } = await supabase
@@ -65,7 +65,7 @@ export async function POST(
         const { token } = await params
         const { action } = await req.json() // 'approve' or 'reject'
 
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         // Find the token
         const { data: tokenData, error: tokenError } = await supabase
