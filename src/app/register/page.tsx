@@ -85,72 +85,43 @@ export default function RegisterPage() {
         setError('')
 
         try {
-            const supabase = createClient()
-
-            // Sign up with email confirmation disabled
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.password,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/dashboard`,
-                    data: {
-                        name: formData.name,
-                        age: parseInt(formData.age),
-                    }
-                }
-            })
-
-            if (authError) {
-                console.error('Auth error:', authError)
-                throw new Error(authError.message)
-            }
-
-            if (!authData.user) {
-                throw new Error('Failed to create user account')
-            }
-
-            // Insert user data
-            const { error: insertError } = await supabase
-                .from('users')
-                .insert({
-                    id: authData.user.id,
+            // Call server-side API route
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     name: formData.name,
-                    age: parseInt(formData.age),
+                    age: formData.age,
+                    email: formData.email,
+                    password: formData.password,
                     phone: formData.phone,
                     address: formData.address,
                     parent_name: formData.parent_name,
                     parent_email: formData.parent_email,
-                })
-
-            if (insertError) {
-                console.error('User insert error:', insertError)
-                throw new Error('Failed to save user information: ' + insertError.message)
-            }
-
-            // Insert startup data
-            const { error: startupError } = await supabase
-                .from('startups')
-                .insert({
-                    user_id: authData.user.id,
                     company_name: formData.company_name,
-                    description: formData.description || null,
-                })
+                    description: formData.description,
+                }),
+            })
 
-            if (startupError) {
-                console.error('Startup insert error:', startupError)
-                throw new Error('Failed to save startup information: ' + startupError.message)
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Registration failed')
             }
 
-            // Send verification email to parent
-            try {
-                await fetch('/api/send-parent-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: authData.user.id }),
-                })
-            } catch (emailError) {
-                console.error('Failed to send parent email:', emailError)
-                // Don't block registration if email fails
+            // Now sign in the user
+            const supabase = createClient()
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: formData.email,
+                password: formData.password,
+            })
+
+            if (signInError) {
+                console.error('Sign in error:', signInError)
+                // Registration succeeded but sign-in failed
+                setError('Account created! Please try logging in.')
+                setTimeout(() => router.push('/login'), 2000)
+                return
             }
 
             // Success - redirect to dashboard
