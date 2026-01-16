@@ -10,10 +10,10 @@ export async function GET(
         console.log('🔍 Looking up token:', token)
         const supabase = await createClient()
 
-        // Find the token
+        // Find the token (only join with users, not startups)
         const { data: tokenData, error: tokenError } = await supabase
             .from('parent_tokens')
-            .select('*, users(*), startups(*)')
+            .select('*, users(*)')
             .eq('token', token)
             .single()
 
@@ -37,11 +37,18 @@ export async function GET(
             return NextResponse.json({ error: 'Verification link already used' }, { status: 400 })
         }
 
+        // Fetch startup separately using user_id
+        const { data: startup } = await supabase
+            .from('startups')
+            .select('*')
+            .eq('user_id', tokenData.user_id)
+            .single()
+
         // Return token data for the page to display
         return NextResponse.json({
             valid: true,
             user: tokenData.users,
-            startup: tokenData.startups,
+            startup: startup,
         })
     } catch (error: any) {
         console.error('Verify parent token error:', error)
