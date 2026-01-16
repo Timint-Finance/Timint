@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(req: NextRequest) {
     try {
@@ -24,7 +24,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Files must be under 5MB' }, { status: 400 })
         }
 
-        const supabase = await createClient()
+        // Use admin client to bypass RLS for storage uploads
+        const supabase = createAdminClient()
 
         // Upload selfie
         const selfieExt = selfie.name.split('.').pop()
