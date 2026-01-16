@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { registerOnBlockchain } from '@/lib/blockchain/polygon'
+import { pinToIPFS } from '@/lib/blockchain/ipfs'
 import { generateTMITToken } from '@/lib/blockchain/token'
 import { getKYCApprovedEmail } from '@/lib/email/templates'
 import { Resend } from 'resend'
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
         }
 
         if (action === 'approve') {
-            // Approve KYC - Delete docs, verify user, register on blockchain
+            // Approve KYC - Delete docs, verify user, register on IPFS
 
             // Get user and startup data
             const { data: user } = await supabase
@@ -91,24 +91,25 @@ export async function POST(req: NextRequest) {
                 console.log('✅ Documents deleted successfully')
             }
 
-            //  2. REGISTER ON BLOCKCHAIN
-            console.log('🔗 Registering on Polygon Mumbai blockchain...')
-            const blockchainResult = await registerOnBlockchain({
-                startupName: startup.company_name,
+            //  2. REGISTER ON IPFS (via Pinata)
+            console.log('🌐 Uploading to IPFS via Pinata...')
+            const ipfsCID = await pinToIPFS({
+                companyName: startup.company_name,
                 founderName: user.name,
                 guardianName: user.parent_name,
                 timestamp: Date.now(),
-                userId: user.id,
+                ownerUserId: user.id,
+                signature: `VERIFIED-${Date.now()}`
             })
 
-            console.log('✅ Blockchain registration complete:', blockchainResult.txHash)
+            console.log('✅ IPFS upload complete. CID:', ipfsCID)
 
             // 3. GENERATE TMIT TOKEN
             const tmitToken = generateTMITToken({
                 companyName: startup.company_name,
                 userId: user.id,
                 timestamp: Date.now(),
-                blockchainTxHash: blockchainResult.txHash,
+                blockchainTxHash: ipfsCID,
             })
 
             console.log('🎫 Generated TMIT Token:', tmitToken)
@@ -123,7 +124,7 @@ export async function POST(req: NextRequest) {
                 .from('startups')
                 .update({
                     verified: true,
-                    blockchain_tx: blockchainResult.txHash,
+                    blockchain_tx: ipfsCID, // Store IPFS CID here
                     token_id: tmitToken,
                 })
                 .eq('user_id', userId)
@@ -150,11 +151,11 @@ export async function POST(req: NextRequest) {
 
             return NextResponse.json({
                 success: true,
-                message: 'KYC approved! User verified and registered on blockchain.',
+                message: 'KYC approved! User verified and registered on IPFS.',
                 data: {
                     tmitToken,
-                    blockchainTx: blockchainResult.txHash,
-                    explorerUrl: blockchainResult.explorerUrl,
+                    ipfsCID: ipfsCID,
+                    ipfsUrl: `https://gateway.pinata.cloud/ipfs/${ipfsCID}`,
                 },
             })
         }
