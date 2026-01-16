@@ -77,22 +77,34 @@ export default function DashboardPage() {
         if (!user || !startup) return
         setIsGeneratingPdf(true)
         try {
+            console.log('Requesting certificate for user:', user.id)
             const response = await fetch('/api/certificate/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: user.id }),
             })
+            console.log('Response status:', response.status, response.statusText)
+
             if (response.ok) {
                 const blob = await response.blob()
+                console.log('Blob size:', blob.size, 'Type:', blob.type)
                 const url = window.URL.createObjectURL(blob)
                 const a = document.createElement('a')
                 a.href = url
                 a.download = `TiMint-Certificate-${startup.company_name.replace(/\s+/g, '-')}.pdf`
+                document.body.appendChild(a)
                 a.click()
+                document.body.removeChild(a)
                 window.URL.revokeObjectURL(url)
+                console.log('PDF download initiated')
+            } else {
+                const errorData = await response.json()
+                console.error('API Error:', errorData)
+                alert('Failed to generate certificate: ' + (errorData.error || 'Unknown error'))
             }
         } catch (error) {
             console.error('Failed to generate PDF:', error)
+            alert('Error generating PDF. Check console for details.')
         } finally {
             setIsGeneratingPdf(false)
         }
