@@ -163,8 +163,8 @@ export async function POST(request: NextRequest) {
         })
 
         yPos -= 20
-        addDetailRow('Guardian Approval', user.parent_verified ? '✓ Approved' : 'Pending')
-        addDetailRow('KYC Status', user.kyc_status === 'verified' ? '✓ Verified' : user.kyc_status)
+        addDetailRow('Guardian Approval', user.parent_verified ? '[APPROVED]' : 'Pending')
+        addDetailRow('KYC Status', user.kyc_status === 'verified' ? '[VERIFIED]' : user.kyc_status)
         addDetailRow('Verification Authority', 'TiMint Finance Approved KYC Partner')
 
         yPos -= 20
