@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { Resend } from 'resend'
+import { generateVerificationToken } from '@/lib/blockchain/token'
+import { getParentVerificationEmail } from '@/lib/email/templates'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: Request) {
     try {
@@ -96,20 +101,57 @@ export async function POST(request: Request) {
             )
         }
 
-        // Send verification email to parent
+        // Send verification email to parent (directly, not via HTTP)
         try {
-            const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/send-parent-email`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: authData.user.id }),
-            })
+            console.log('Sending parent email for userId:', authData.user.id)
 
-            const emailData = await emailResponse.json()
+            // Generate verification token
+            const token = generateVerificationToken()
+            const expiresAt = new Date()
+            expiresAt.setHours(expiresAt.getHours() + 24)
 
-            if (!emailResponse.ok) {
-                console.error('Email API error:', emailData)
+            // Save token to database
+            const { error: tokenError } = await admin
+                .from('parent_tokens')
+                .insert({
+                    user_id: authData.user.id,
+                    token,
+                    expires_at: expiresAt.toISOString(),
+                    email_sent: true,
+                })
+
+            if (tokenError) {
+                console.error('Token insert error:', tokenError)
             } else {
-                console.log('Email sent successfully to:', emailData.parentEmail)
+                // Create verification URL
+                const verificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://timint.vercel.app'}/verify-parent/${token}`
+
+                // Get email template
+                const emailContent = getParentVerificationEmail({
+                    parentName: parent_name,
+                    teenName: name,
+                    teenAge: parseInt(age),
+                    startupName: company_name,
+                    verificationUrl,
+                })
+
+                console.log('Attempting to send email to:', parent_email)
+                console.log('Verification URL:', verificationUrl)
+
+                // Send email via Resend
+                const { data: emailData, error: emailError } = await resend.emails.send({
+                    from: 'TiMint Finance <onboarding@resend.dev>',
+                    to: parent_email,
+                    subject: emailContent.subject,
+                    html: emailContent.html,
+                    text: emailContent.text,
+                })
+
+                if (emailError) {
+                    console.error('Resend API error:', emailError)
+                } else {
+                    console.log('Email sent successfully! Email ID:', emailData?.id)
+                }
             }
         } catch (emailError) {
             console.error('Failed to send parent email:', emailError)
