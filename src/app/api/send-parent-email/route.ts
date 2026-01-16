@@ -8,7 +8,14 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest) {
     try {
+        // Check if Resend API key is configured
+        if (!process.env.RESEND_API_KEY) {
+            console.error('RESEND_API_KEY is not configured!')
+            return NextResponse.json({ error: 'Email service not configured' }, { status: 500 })
+        }
+
         const { userId } = await req.json()
+        console.log('Sending parent email for userId:', userId)
 
         const supabase = await createClient()
 
@@ -66,7 +73,10 @@ export async function POST(req: NextRequest) {
         })
 
         // Send email via Resend (using test domain for free tier)
-        const { error: emailError } = await resend.emails.send({
+        console.log('Attempting to send email to:', user.parent_email)
+        console.log('Verification URL:', verificationUrl)
+
+        const { data: emailData, error: emailError } = await resend.emails.send({
             from: 'TiMint Finance <onboarding@resend.dev>',
             to: user.parent_email,
             subject: emailContent.subject,
@@ -75,9 +85,11 @@ export async function POST(req: NextRequest) {
         })
 
         if (emailError) {
-            console.error('Email send error:', emailError)
-            return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
+            console.error('Resend API error:', emailError)
+            return NextResponse.json({ error: 'Failed to send email: ' + JSON.stringify(emailError) }, { status: 500 })
         }
+
+        console.log('Email sent successfully! Email ID:', emailData?.id)
 
         return NextResponse.json({
             success: true,

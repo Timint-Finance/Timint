@@ -98,11 +98,19 @@ export async function POST(request: Request) {
 
         // Send verification email to parent
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/send-parent-email`, {
+            const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/send-parent-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: authData.user.id }),
             })
+
+            const emailData = await emailResponse.json()
+
+            if (!emailResponse.ok) {
+                console.error('Email API error:', emailData)
+            } else {
+                console.log('Email sent successfully to:', emailData.parentEmail)
+            }
         } catch (emailError) {
             console.error('Failed to send parent email:', emailError)
             // Don't block registration if email fails
