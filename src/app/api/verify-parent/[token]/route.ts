@@ -7,6 +7,7 @@ export async function GET(
 ) {
     try {
         const { token } = await params
+        console.log('🔍 Looking up token:', token)
         const supabase = await createClient()
 
         // Find the token
@@ -16,7 +17,10 @@ export async function GET(
             .eq('token', token)
             .single()
 
+        console.log('📊 Token lookup result:', { found: !!tokenData, error: tokenError })
+
         if (tokenError || !tokenData) {
+            console.error('❌ Token not found:', tokenError)
             return NextResponse.json({ error: 'Invalid or expired token' }, { status: 404 })
         }
 
