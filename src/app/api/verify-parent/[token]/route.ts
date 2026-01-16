@@ -83,11 +83,8 @@ export async function POST(
                 .update({ parent_verified: true })
                 .eq('id', tokenData.user_id)
 
-            // Mark token as used
-            await supabase
-                .from('parent_tokens')
-                .update({ used: true })
-                .eq('token', token)
+            // DON'T mark token as used yet - wait until KYC documents are uploaded
+            // This allows the parent to continue using the same link for KYC upload
 
             return NextResponse.json({
                 success: true,

@@ -82,6 +82,12 @@ export async function POST(req: NextRequest) {
             .update({ kyc_status: 'under_review' })
             .eq('id', userId)
 
+        // Mark parent token as used now that KYC is uploaded
+        await supabase
+            .from('parent_tokens')
+            .update({ used: true, used_at: new Date().toISOString() })
+            .eq('user_id', userId)
+
         return NextResponse.json({
             success: true,
             message: 'Documents uploaded successfully. Your KYC is now under review.'
