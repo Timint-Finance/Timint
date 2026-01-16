@@ -151,7 +151,7 @@ export default function VerifyParentPage({ params }: { params: Promise<{ token: 
                             </div>
                             <div>
                                 <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)' }}>Startup Name</p>
-                                <p style={{ fontWeight: 600 }}>{data.startup.company_name}</p>
+                                <p style={{ fontWeight: 600 }}>{data.startup?.company_name || 'Not available'}</p>
                             </div>
                         </div>
 
